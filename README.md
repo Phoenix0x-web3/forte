@@ -20,7 +20,8 @@ Forte Protocol is a Layer 1 blockchain designed to integrate real-world assets (
 ## Requirements
 - Python version 3.12 
 - Private keys EVM
-- Proxy (optional)
+- Proxy  
+- Twitter account: 6 months old, 28 subscribers.
 
 
 ## Installation
