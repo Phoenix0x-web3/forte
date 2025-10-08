@@ -1,0 +1,73 @@
+#Settings for the application
+
+# Whether to encrypt private keys
+private_key_encryption: true
+
+# Number of threads to use for processing wallets
+threads: 1
+
+# Number of retry
+retry: 5
+#BY DEFAULT: [0,0] - all wallets
+#Example: [2, 6] will run wallets 2,3,4,5,6
+#[4,4] will run only wallet 4
+range_wallets_to_run: [0,0]
+
+# Whether to shuffle the list of wallets before processing
+shuffle_wallets: true
+
+# Working only if range_wallet_to_run = [0,0] 
+# BY DEFAULT: [] - all wallets 
+# Example: [1, 3, 8] - will run only 1, 3 and 8 wallets
+exact_wallets_to_run: []
+
+# Show wallet address in logs
+show_wallet_address_logs: false
+
+#Check for github updates
+check_git_updates: true
+
+# the log level for the application. Options: DEBUG, INFO, WARNING, ERROR
+log_level : INFO
+
+# Delay before running the wallets that don't perform all the actions in the first round (~24 hrs default)
+random_pause_wallet_after_all_completion:
+  min: 86400
+  max: 90000
+
+# Random pause between actions in seconds
+random_pause_between_actions:
+  min: 30
+  max: 120
+
+# Random pause between start wallets in seconds
+random_pause_start_wallet:
+  min: 0
+  max: 60
+
+#Perform automatic replacement from proxy reserve files
+auto_replace_proxy: True
+
+#Perform automatic replacement from twitter reserve files
+auto_replace_twitter: True
+#Network can use for bridge to Gravity, for Galxe quests. Available: ethereum, arbitrum, base, optimism, ink, mode, bsc, op_bnb, polygon, soneium, lisk, unichain, avalanche, zksync, linea
+network_for_bridge: [arbitrum, base, optimism]
+#Random diaposon for ETH bridge. (0.1$ - 0.5$ in ETH default)
+random_eth_for_bridge:
+  min: 0.000025
+  max: 0.0001
+
+#Use banned Galxe accounts
+use_banned_galxe: False
+
+#Invite Codes for First Quest. Example: GRFr2Jzkbymv2aMgptNOKa3gm3wcDjkoiuc66Fg1Kt8qxF_
+first_quest_invite: []
+
+#Invite Codes for Second Quest. Example: GRFr2I2lYumsU7D-ptNOKa3gpe8fnWSyY0XyYium46pgIAJ
+second_quest_invite: []
+
+#Invite Codes for Third Quest. Example: GRFr2JsrYmmsVrztptNOKa3gn6eAj__0rsgM6zkAA6WTNwD
+third_quest_invite: []
+
+#Use only settings invite codes. If true, only invite codes from the setting above will be applied. If False, random ref codes from both invite_codes and database will be applied.
+only_settings_invite_codes: false
