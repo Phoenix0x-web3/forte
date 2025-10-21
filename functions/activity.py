@@ -75,31 +75,48 @@ async def activity(action: int):
 async def start_main_action(wallet):
     await random_sleep_before_start(wallet=wallet)
 
-    client = Client(private_key=wallet.private_key, proxy=wallet.proxy, network=Networks.Gravity)
+    settings = Settings()
+    sleep_s = 30
+    max_retries = settings.retry
+    auto_replace = settings.auto_replace_proxy
 
-    controller = Controller(client=client, wallet=wallet)
+    def build_controller(w):
+        client = Client(private_key=w.private_key, proxy=w.proxy, network=Networks.Gravity)
+        return Controller(client=client, wallet=w)
 
-    for _ in range(Settings().retry):
+    controller = build_controller(wallet)
+
+    errors = 0
+    while True:
         try:
             await controller.base.browser.get(url="https://api.ipify.org")
-            break
+            break  # proxy OK
         except Exception as e:
-            if not Settings().auto_replace_proxy:
-                logger.error(f"{controller.wallet} proxy issue and auto replace disabled")
+            errors += 1
+            logger.error(f"{controller.wallet} Proxy error: {e}. Retry {errors}/{max_retries}")
+
+            if errors < max_retries:
+                logger.info(f"{controller.wallet} sleeping {sleep_s}s before retry")
+                await asyncio.sleep(sleep_s)
                 continue
 
-            resource_manager = ResourceManager()
-            await resource_manager.mark_proxy_as_bad(controller.wallet.id)
-            logger.error(f"{controller.wallet} Proxy error: {e}.")
-            success, message = await resource_manager.replace_proxy(controller.wallet.id)
-            if success:
-                logger.success(f"{controller.wallet} | proxy automatically replaced: {message}")
-                updated_user = get_wallet_by_address(address=controller.wallet.address)
-                if updated_user:
-                    client = Client(private_key=wallet.private_key, proxy=updated_user.proxy, network=Networks.Gravity)
-                    controller = Controller(client=client, wallet=wallet)
-            else:
-                logger.error(f"{controller.wallet} | failed to replace proxy: {message}")
+            if not auto_replace:
+                logger.error(f"{controller.wallet} proxy issue {errors}/{max_retries}; auto-replace disabled -> abort")
                 return
+
+            logger.warning(f"{controller.wallet} retries exhausted; attempting proxy replacement")
+            rm = ResourceManager()
+            await rm.mark_proxy_as_bad(controller.wallet.id)
+            success, message = await rm.replace_proxy(controller.wallet.id)
+            if not success:
+                logger.error(f"{controller.wallet} failed to replace proxy: {message}")
+                return
+
+            logger.success(f"{controller.wallet} proxy replaced: {message}")
+
+            wallet = get_wallet_by_address(address=controller.wallet.address) or controller.wallet
+
+            controller = build_controller(wallet)
+            errors = 0
 
     return await controller.complete_galxe_quests()
