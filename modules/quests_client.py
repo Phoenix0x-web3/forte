@@ -166,9 +166,15 @@ class Quests:
         return False
 
     async def _ensure_participation(self, galxe_client, participate_tiers):
+        if self.wallet.pioner_galxe_completed:
+            return
         tier = participate_tiers[0]
         if not tier["eligible"]:
-            for _ in range(Settings().retry):
+            for t in tier["attrs"]:
+                if "__typename" in t:
+                    del t["__typename"]
+
+            for _ in range(2):
                 sync = await galxe_client.sync_credit_value(attrs=tier["attrs"], cred_id=str(tier["cred_id"]))
                 if sync:
                     logger.success(f"{self.wallet} success sync requirements criteria on Galxe. Sleep 60s")
@@ -176,7 +182,7 @@ class Quests:
                     return
 
                 random_sleep = random.randint(80, 100)
-                logger.info(f"{self.wallet} sync delayed. Auto retry in {random_sleep}s. ({_ + 1}/{Settings().retry}). No action needed")
+                logger.debug(f"{self.wallet} sync delayed. Auto retry in {random_sleep}s. ({_ + 1}/{Settings().retry}). No action needed")
                 await asyncio.sleep(random_sleep)
 
     async def _referral_sync(self, galxe_client, referral_tiers):
