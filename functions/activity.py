@@ -107,12 +107,12 @@ async def start_main_action(wallet):
             logger.warning(f"{controller.wallet} retries exhausted; attempting proxy replacement")
             rm = ResourceManager()
             await rm.mark_proxy_as_bad(controller.wallet.id)
-            success, message = await rm.replace_proxy(controller.wallet.id)
+            success = await rm.replace_proxy(controller.wallet.id)
             if not success:
-                logger.error(f"{controller.wallet} failed to replace proxy: {message}")
+                logger.error(f"{controller.wallet} failed to replace proxy")
                 return
 
-            logger.success(f"{controller.wallet} proxy replaced: {message}")
+            logger.success(f"{controller.wallet} proxy replaced")
 
             wallet = get_wallet_by_address(address=controller.wallet.address) or controller.wallet
 

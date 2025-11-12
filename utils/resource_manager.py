@@ -112,7 +112,7 @@ class ResourceManager:
 
         return token
 
-    async def replace_proxy(self, id: int) -> Tuple[bool, str]:
+    async def replace_proxy(self, id: int) -> bool:
         """
         Replace a user's proxy
 
@@ -124,16 +124,19 @@ class ResourceManager:
         """
         new_proxy = self._get_available_proxy()
         if not new_proxy:
-            return False, "No available reserve proxies"
+            logger.error("No available reserve proxies")
+            return False
 
         success = replace_bad_proxy(id, new_proxy)
 
         if success:
-            return True, f"Proxy successfully replaced with {new_proxy}"
+            logger.success(f"Proxy successfully replaced with {new_proxy}")
+            return True
         else:
-            return False, "Failed to replace proxy"
+            logger.error("Failed to replace proxy")
+            return False
 
-    async def replace_twitter(self, id: int) -> Tuple[bool, str]:
+    async def replace_twitter(self, id: int) -> bool:
         """
         Replace a user's Twitter token
 
@@ -145,17 +148,17 @@ class ResourceManager:
         """
         new_token = self._get_available_twitter()
         if not new_token:
-            return False, "No available reserve Twitter tokens"
+            return False
 
         success = replace_bad_twitter(id, new_token)
 
         if success:
             logger.success("Twitter token successfully replaced in database")
-            return True, "Twitter token successfully replaced"
+            return True
         else:
             # Do not return token to file as it may already be used
             logger.error("Failed to replace Twitter token in database")
-            return False, "Failed to replace Twitter token"
+            return False
 
     async def mark_proxy_as_bad(self, id: int) -> bool:
         """
@@ -199,7 +202,7 @@ class ResourceManager:
         bad_proxies = await self.get_bad_proxies()
 
         for wallet in bad_proxies:
-            success, _ = await self.replace_proxy(wallet.id)
+            success = await self.replace_proxy(wallet.id)
             if success:
                 replaced += 1
 
@@ -217,7 +220,7 @@ class ResourceManager:
         bad_twitter = await self.get_bad_twitter()
 
         for wallet in bad_twitter:
-            success, _ = await self.replace_twitter(wallet.id)
+            success = await self.replace_twitter(wallet.id)
             if success:
                 replaced += 1
 
